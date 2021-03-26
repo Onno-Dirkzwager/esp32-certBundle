@@ -188,7 +188,7 @@ esp_err_t esp_crt_bundle_attach(void *conf)
     // If no bundle has been set by the user then use the bundle embedded in the binary
     if (s_crt_bundle.crts == NULL) {
         log_d("using embedded bundle");
-        ret = esp_crt_bundle_init(x509_crt_imported_bundle_bin_start);
+        //ret = esp_crt_bundle_init(x509_crt_imported_bundle_bin_start);
     }
 
     if (ret != ESP_OK) {
