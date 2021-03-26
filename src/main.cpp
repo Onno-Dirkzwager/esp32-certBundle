@@ -1,4 +1,6 @@
 #include "main.hpp"
+#include "FS.h"
+#include "SPIFFS.h"
 
 void setup() 
 {
@@ -25,10 +27,39 @@ void setup()
 void loop() 
 {
   WiFiClientSecure *client = new WiFiClientSecure;
+
+
   if(client)
   {
-    client -> setUseCertBundle(true);
-    {
+    client->setUseCertBundle(true);
+
+    bool bundleLoaded = true;
+
+    // Start SPIFFS and load partition
+    if(!SPIFFS.begin()) {
+        Serial.println("Could not start SPIFFS and load partition");
+        bundleLoaded = false;
+    }
+
+
+    // Load bundle from SPIFFS
+    File file = SPIFFS.open("/cert/x509_crt_bundle.bin", "r");
+    if(!file) {
+        Serial.println("Could not load bundle from SPIFFS");
+        bundleLoaded = false;
+    }
+
+
+    // Load loadCertBundle into WiFiClientSecure
+    if(file && file.size() > 0) {
+        if(!client->loadCertBundle(file, file.size())){
+            Serial.println("WiFiClientSecure: could not load bundle");
+            bundleLoaded = false;
+        }
+    }
+
+    
+    if(bundleLoaded){
       // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is 
       HTTPClient https;
   
