@@ -345,6 +345,28 @@ bool WiFiClientSecure::loadPrivateKey(Stream& stream, size_t size) {
   return ret;
 }
 
+bool WiFiClientSecure::loadCertBundle(Stream& stream, size_t size) {
+  // esp_crt_bundle_set expects a uint8_t * so we cannot reuse 
+  // the char *_streamLoad(stream, size); without modifying it.
+
+  uint8_t *dest = (uint8_t*)malloc(size+1);
+  if (!dest) {
+    return false;
+  }
+  if (size != stream.readBytes(dest, size)) {
+    free(dest);
+    return false;
+  }
+  dest[size] = '\0';
+
+  bool ret = false;
+  if (dest) {
+    esp_crt_bundle_set(dest);
+    ret = true;
+  }
+  return ret;
+}
+
 int WiFiClientSecure::lastError(char *buf, const size_t size)
 {
     if (!_lastError) {
