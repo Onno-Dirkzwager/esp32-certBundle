@@ -1,6 +1,12 @@
 #include "main.hpp"
-#include "FS.h"
-#include "SPIFFS.h"
+
+#ifdef SPIFFS_BUNDLE
+	#include "FS.h"
+	#include "SPIFFS.h"
+#else 
+	// pointer to certificate data in flash space
+	extern const uint8_t rootca_bundle_crt_start[] asm("_binary_data_cert_x509_crt_bundle_bin_start");
+#endif
 
 void setup() 
 {
@@ -31,32 +37,37 @@ void loop()
 
   if(client)
   {
+    bool bundleLoaded = true;
+#ifdef SPIFFS_BUNDLE
     client->setUseCertBundle(true);
 
-    bool bundleLoaded = true;
+      bool bundleLoaded = true;
 
-    // Start SPIFFS and load partition
-    if(!SPIFFS.begin()) {
-        Serial.println("Could not start SPIFFS and load partition");
-        bundleLoaded = false;
-    }
-
-
-    // Load bundle from SPIFFS
-    File file = SPIFFS.open("/cert/x509_crt_bundle.bin", "r");
-    if(!file) {
-        Serial.println("Could not load bundle from SPIFFS");
-        bundleLoaded = false;
-    }
+      // Start SPIFFS and load partition
+      if(!SPIFFS.begin()) {
+          Serial.println("Could not start SPIFFS and load partition");
+          bundleLoaded = false;
+      }
 
 
-    // Load loadCertBundle into WiFiClientSecure
-    if(file && file.size() > 0) {
-        if(!client->loadCertBundle(file, file.size())){
-            Serial.println("WiFiClientSecure: could not load bundle");
-            bundleLoaded = false;
-        }
-    }
+      // Load bundle from SPIFFS
+      File file = SPIFFS.open("/cert/x509_crt_bundle.bin", "r");
+      if(!file) {
+          Serial.println("Could not load bundle from SPIFFS");
+          bundleLoaded = false;
+      }
+
+
+      // Load loadCertBundle into WiFiClientSecure
+      if(file && file.size() > 0) {
+          if(!client->loadCertBundle(file, file.size())){
+              Serial.println("WiFiClientSecure: could not load bundle");
+              bundleLoaded = false;
+          }
+      }
+#else
+	client->setCertBundle(rootca_bundle_crt_start);
+#endif
 
     
     if(bundleLoaded){

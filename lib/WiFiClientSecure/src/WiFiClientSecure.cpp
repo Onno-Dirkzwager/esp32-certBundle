@@ -345,6 +345,11 @@ bool WiFiClientSecure::loadPrivateKey(Stream& stream, size_t size) {
   return ret;
 }
 
+void WiFiClientSecure::setCertBundle(const uint8_t * bundle) {
+    esp_crt_bundle_set(bundle); 
+    setUseCertBundle(true);
+}
+
 bool WiFiClientSecure::loadCertBundle(Stream& stream, size_t size) {
   // esp_crt_bundle_set expects a uint8_t * so we cannot reuse 
   // the char *_streamLoad(stream, size); without modifying it.
