@@ -69,6 +69,7 @@ public:
     bool loadCertificate(Stream& stream, size_t size);
     bool loadPrivateKey(Stream& stream, size_t size);
     bool loadCertBundle(Stream& stream, size_t size);
+    void setCertBundle(const uint8_t* bundle);
     bool verify(const char* fingerprint, const char* domain_name);
     void setHandshakeTimeout(unsigned long handshake_timeout);
 
